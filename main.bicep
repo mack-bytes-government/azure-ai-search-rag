@@ -60,3 +60,18 @@ module search './modules/search.bicep' = {
     storage
   ]
 }
+
+module logic_app './modules/logic-app.bicep' = {
+  name: 'logic-app'
+  params: {
+    logic_app_name: '${project_prefix}-${env_prefix}-logic-app'
+    location: resourceGroup().location
+    subnet_id: existing_network.outputs.logic_app_subnet_id
+    vnet_id: existing_network.outputs.id
+    default_tag_name: default_tag_name
+    default_tag_value: default_tag_value
+  }
+  dependsOn: [
+    search
+  ]
+}
