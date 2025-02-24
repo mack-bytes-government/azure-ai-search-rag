@@ -44,6 +44,9 @@ module storage './modules/storage.bicep' = {
     default_tag_name: default_tag_name
     default_tag_value: default_tag_value
   }
+  dependsOn: [
+    existing_network
+  ]
 }
 
 module search './modules/search.bicep' = {
