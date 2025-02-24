@@ -75,7 +75,7 @@ az login
 First this deployment requires a resource group and a virtual network to work with.  If those do not exist, run the following to stand them up.
 
 ```bash
-RESOURCE_GROUP_NAME="search-rag-test-rg"
+RESOURCE_GROUP_NAME="search-rag-dev-rg"
 VNET_NAME="search-rag-vnet"
 LOCATION="usgovvirginia"
 SUBNET_NAME="default"
@@ -90,7 +90,7 @@ az network vnet create --name $VNET_NAME --resource-group $RESOURCE_GROUP_NAME -
 If you already have a vnet, then run the following:
 
 ```bash
-RESOURCE_GROUP_NAME="search-rag-test-rg"
+RESOURCE_GROUP_NAME="search-rag-dev-rg"
 PROJECT_PREFIX="rag"
 ENV_PREFIX="dev1"
 EXISTING_NETWORK_NAME="search-rag-vnet"

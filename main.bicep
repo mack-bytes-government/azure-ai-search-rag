@@ -14,6 +14,8 @@ param existing_network_name string
 // Subnet Configuration
 param project_cidr string = '10.0.1.0/24'
 param storage_cidr string = '10.0.2.0/24'
+param logic_app_in_cidr string = '10.0.3.0/24'
+param logic_app_out_cidr string = '10.0.4.0/24'
 
 // Tag Configuration:
 param default_tag_name string
@@ -29,6 +31,8 @@ module existing_network './modules/network.bicep' = {
     existing_network_name: existing_network_name
     project_cidr: project_cidr
     storage_cidr: storage_cidr
+    logic_app_in_cidr: logic_app_in_cidr
+    logic_app_out_cidr: logic_app_out_cidr
     default_tag_name: default_tag_name
     default_tag_value: default_tag_value
   }
@@ -64,17 +68,18 @@ module search './modules/search.bicep' = {
   ]
 }
 
-// module logic_app './modules/logic-app.bicep' = {
-//   name: 'logic-app'
-//   params: {
-//     logic_app_name: '${project_prefix}-${env_prefix}-logic-app'
-//     location: resourceGroup().location
-//     subnet_id: existing_network.outputs.logic_app_subnet_id
-//     vnet_id: existing_network.outputs.id
-//     default_tag_name: default_tag_name
-//     default_tag_value: default_tag_value
-//   }
-//   dependsOn: [
-//     search
-//   ]
-// }
+module logic_app './modules/logic-app.bicep' = {
+  name: 'logic-app'
+  params: {
+    logic_app_name: '${project_prefix}-${env_prefix}-logic-app'
+    location: resourceGroup().location
+    subnet_in_id: existing_network.outputs.logic_app_in_subnet_id
+    subnet_out_id: existing_network.outputs.logic_app_out_subnet_id
+    vnet_id: existing_network.outputs.id
+    default_tag_name: default_tag_name
+    default_tag_value: default_tag_value
+  }
+  dependsOn: [
+    search
+  ]
+}
