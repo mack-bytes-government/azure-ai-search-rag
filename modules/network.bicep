@@ -104,6 +104,9 @@ resource bastion_subnet 'Microsoft.Network/virtualNetworks/subnets@2023-09-01' =
 resource bastion_pip 'Microsoft.Network/publicIPAddresses@2023-09-01' = if (deploy_jumpbox) {
   name: '${project_prefix}-${env_prefix}-bastion-pip'
   location: location
+  sku: {
+    name: 'Standard'
+  }
   properties: {
     publicIPAllocationMethod: 'Static'
   }

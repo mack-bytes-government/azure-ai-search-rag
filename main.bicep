@@ -81,7 +81,7 @@ module search './modules/search.bicep' = if (deploy_search) {
 module logic_app './modules/logic-app.bicep' = if (deploy_logic_app) {
   name: 'logic-app'
   params: {
-    logic_app_name: '${project_prefix}-${env_prefix}-logic-app'
+    logic_app_name: '${project_prefix}-${env_prefix}-logicapp'
     location: resourceGroup().location
     subnet_in_id: existing_network.outputs.logic_app_in_subnet_id
     subnet_out_id: existing_network.outputs.logic_app_out_subnet_id
