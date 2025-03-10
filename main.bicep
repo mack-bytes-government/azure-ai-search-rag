@@ -23,9 +23,6 @@ param default_tag_value string
 
 // Jumpbox Configuration
 param deploy_jumpbox bool = false
-param admin_username string
-@secure()
-param admin_password string
 
 // Deployment Control:
 param deploy_search bool = true
@@ -97,16 +94,8 @@ module logic_app './modules/logic-app.bicep' = if (deploy_logic_app) {
   ]
 }
 
-module jumpbox './modules/jumpbox.bicep' = if (deploy_jumpbox) {
-  name: 'jumpbox'
-  params: {
-    jumpbox_name: '${project_prefix}-${env_prefix}-jumpbox'
-    location: resourceGroup().location
-    jumpbox_subnet_id: existing_network.outputs.jumpbox_subnet_id
-    admin_username: admin_username
-    admin_password: admin_password
-  }
-  dependsOn: [
-    existing_network
-  ]
-}
+output storage_subnet_id string = existing_network.outputs.storage_subnet_id
+output logic_app_in_subnet_id string = existing_network.outputs.logic_app_in_subnet_id
+output logic_app_out_subnet_id string = existing_network.outputs.logic_app_out_subnet_id
+output search_subnet_id string = existing_network.outputs.primary_subnet_id
+output jumpbox_subnet_id string = deploy_jumpbox ? existing_network.outputs.jumpbox_subnet_id : 'N/A'

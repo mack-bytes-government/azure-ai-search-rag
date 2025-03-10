@@ -90,7 +90,7 @@ resource jumpbox_subnet 'Microsoft.Network/virtualNetworks/subnets@2023-09-01' =
 
 // Bastion Subnet
 resource bastion_subnet 'Microsoft.Network/virtualNetworks/subnets@2023-09-01' = if (deploy_jumpbox) {
-  name: '${project_prefix}-${env_prefix}-bastion'
+  name: 'AzureBastionSubnet'
   parent: virtual_network 
   properties: {
     addressPrefix: bastion_cidr
@@ -98,6 +98,15 @@ resource bastion_subnet 'Microsoft.Network/virtualNetworks/subnets@2023-09-01' =
   dependsOn: [
     virtual_network, jumpbox_subnet
   ]
+}
+
+// Public IP Address for Bastion Host
+resource bastion_pip 'Microsoft.Network/publicIPAddresses@2023-09-01' = if (deploy_jumpbox) {
+  name: '${project_prefix}-${env_prefix}-bastion-pip'
+  location: location
+  properties: {
+    publicIPAllocationMethod: 'Static'
+  }
 }
 
 // Bastion Host
@@ -113,7 +122,7 @@ resource bastion_host 'Microsoft.Network/bastionHosts@2023-09-01' = if (deploy_j
             id: bastion_subnet.id
           }
           publicIPAddress: {
-            id: '/subscriptions/${subscription().subscriptionId}/resourceGroups/${resourceGroup().name}/providers/Microsoft.Network/publicIPAddresses/${project_prefix}-${env_prefix}-bastion-pip'
+            id: bastion_pip.id
           }
         }
       }
@@ -121,6 +130,7 @@ resource bastion_host 'Microsoft.Network/bastionHosts@2023-09-01' = if (deploy_j
   }
   dependsOn: [
     bastion_subnet
+    bastion_pip
   ]
 }
 
