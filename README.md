@@ -100,9 +100,36 @@ DEFAULT_TAG_VALUE="search-rag"
 az deployment group create --resource-group $RESOURCE_GROUP_NAME --template-file ./main.bicep --parameters project_prefix=$PROJECT_PREFIX env_prefix=$ENV_PREFIX existing_network_name=$EXISTING_NETWORK_NAME default_tag_name=$DEFAULT_TAG_NAME default_tag_value=$DEFAULT_TAG_VALUE
 ```
 
+If you want to control and deploy only specific pieces, there are options for controlling which parts are deployed, default is 'true' for these values:
+
+```
+DEPLOY_SEARCH=true
+DEPLOY_LOGIC_APP=true
+DEPLOY_STORAGE=true
+
+az deployment group create --resource-group $RESOURCE_GROUP_NAME --template-file ./main.bicep --parameters project_prefix=$PROJECT_PREFIX env_prefix=$ENV_PREFIX existing_network_name=$EXISTING_NETWORK_NAME default_tag_name=$DEFAULT_TAG_NAME default_tag_value=$DEFAULT_TAG_VALUE deploy_storage=$DEPLOY_STORAGE deploy_logic_app=$DEPLOY_LOGIC_APP deploy_logic_app=$DEPLOY_LOGIC_APP
+```
+
+## Deploy with Jumpbox
+
+If you wish, you can deploy this template with a jumpbox and bastion enabled.  This will allow validation of the private deployment.  
+
+```
+ADMIN_USERNAME=""
+ADMIN_PASSWORD=""
+
+az deployment group create --resource-group $RESOURCE_GROUP_NAME --template-file ./main.bicep --parameters project_prefix=$PROJECT_PREFIX env_prefix=$ENV_PREFIX existing_network_name=$EXISTING_NETWORK_NAME default_tag_name=$DEFAULT_TAG_NAME default_tag_value=$DEFAULT_TAG_VALUE deploy_jumpbox=true admin_username=$ADMIN_USERNAME admin_password=$ADMIN_PASSWORD
+```
+
+## Clean up Deployment
+
+To clean up the resources, you can run the following command:
+
+```bash
+az group delete -n $RESOURCE_GROUP_NAME -y
+```
+
 To Do:
-[ ]: Build out logic app implementation
 [ ]: Build out adding index into the Azure Search
 [ ]: Build out NSGs to validate everything
 [ ]: Review IL4/IL5 to make sure rules are applied.  
-[ ]: Build out adding blob for index file for template.

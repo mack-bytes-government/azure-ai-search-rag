@@ -21,6 +21,18 @@ param logic_app_out_cidr string = '10.0.4.0/24'
 param default_tag_name string
 param default_tag_value string
 
+// Jumpbox Configuration
+param deploy_jumpbox bool = false
+param admin_username string
+@secure()
+param admin_password string
+
+// Deployment Control:
+param deploy_search bool = true
+param deploy_logic_app bool = true  
+param deploy_storage bool = true
+
+
 //Deploy into a existing network
 module existing_network './modules/network.bicep' = {
   name: 'existing-network'
@@ -35,10 +47,11 @@ module existing_network './modules/network.bicep' = {
     logic_app_out_cidr: logic_app_out_cidr
     default_tag_name: default_tag_name
     default_tag_value: default_tag_value
+    deploy_jumpbox: deploy_jumpbox
   }
 }
 
-module storage './modules/storage.bicep' = {
+module storage './modules/storage.bicep' = if (deploy_storage) {
   name: 'storage'
   params: {
     storage_account_name: '${project_prefix}${env_prefix}stg'
@@ -53,7 +66,7 @@ module storage './modules/storage.bicep' = {
   ]
 }
 
-module search './modules/search.bicep' = {
+module search './modules/search.bicep' = if (deploy_search) {
   name: 'search'
   params: {
     search_name: '${project_prefix}${env_prefix}search'
@@ -68,7 +81,7 @@ module search './modules/search.bicep' = {
   ]
 }
 
-module logic_app './modules/logic-app.bicep' = {
+module logic_app './modules/logic-app.bicep' = if (deploy_logic_app) {
   name: 'logic-app'
   params: {
     logic_app_name: '${project_prefix}-${env_prefix}-logic-app'
@@ -81,5 +94,19 @@ module logic_app './modules/logic-app.bicep' = {
   }
   dependsOn: [
     search
+  ]
+}
+
+module jumpbox './modules/jumpbox.bicep' = if (deploy_jumpbox) {
+  name: 'jumpbox'
+  params: {
+    jumpbox_name: '${project_prefix}-${env_prefix}-jumpbox'
+    location: resourceGroup().location
+    jumpbox_subnet_id: existing_network.outputs.jumpbox_subnet_id
+    admin_username: admin_username
+    admin_password: admin_password
+  }
+  dependsOn: [
+    existing_network
   ]
 }
