@@ -139,10 +139,24 @@ az deployment group create --resource-group $RESOURCE_GROUP_NAME --template-file
 
 For this template, you can create a subnet by enabling the "deploy_aoai" set to true, and then run the following:
 
+First run this to deploy the environment:
+
+```bash
+RESOURCE_GROUP_NAME="search-rag-demo-rg"
+PROJECT_PREFIX="rag"
+ENV_PREFIX="dev1"
+EXISTING_NETWORK_NAME="search-rag-vnet"
+DEFAULT_TAG_NAME="environment"
+DEFAULT_TAG_VALUE="search-rag"
+
+az deployment group create --resource-group $RESOURCE_GROUP_NAME --template-file ./main.bicep --parameters project_prefix=$PROJECT_PREFIX env_prefix=$ENV_PREFIX existing_network_name=$EXISTING_NETWORK_NAME default_tag_name=$DEFAULT_TAG_NAME default_tag_value=$DEFAULT_TAG_VALUE deploy_openai=true deploy_jumpbox=true
+```
+
 ```bash
 ADMIN_EMAIL=""
+AOAI_SUBNET_ID=""
 
-az deployment group create --resource-group $RESOURCE_GROUP_NAME --template-file ./main-aoai.bicep --parameters project_prefix=$PROJECT_PREFIX env_prefix=$ENV_PREFIX default_tag_name=$DEFAULT_TAG_NAME default_tag_value=$DEFAULT_TAG_VALUE admin_email=$ADMIN_EMAIL subnet_id=$JUMPBOX_SUBNET_ID
+az deployment group create --resource-group $RESOURCE_GROUP_NAME --template-file ./main-aoai.bicep --parameters project_prefix=$PROJECT_PREFIX env_prefix=$ENV_PREFIX default_tag_name=$DEFAULT_TAG_NAME default_tag_value=$DEFAULT_TAG_VALUE admin_email=$ADMIN_EMAIL subnet_id=$AOAI_SUBNET_ID
 ```
 
 ## Clean up Deployment
@@ -152,8 +166,3 @@ To clean up the resources, you can run the following command:
 ```bash
 az group delete -n $RESOURCE_GROUP_NAME -y
 ```
-
-To Do:
-[ ]: Build out adding index into the Azure Search
-[ ]: Build out NSGs to validate everything
-[ ]: Review IL4/IL5 to make sure rules are applied.  
