@@ -7,13 +7,9 @@ param admin_username string
 @secure()
 param admin_password string
 
-resource publicIP 'Microsoft.Network/publicIPAddresses@2023-09-01' = {
-  name: '${jumpbox_name}-jumpbox-pip'
-  location: location
-  properties: {
-    publicIPAllocationMethod: 'Dynamic'
-  }
-}
+// Tag Configuration:
+param default_tag_name string
+param default_tag_value string
 
 resource networkInterface 'Microsoft.Network/networkInterfaces@2023-09-01' = {
   name: '${jumpbox_name}-jumpbox-nic'
@@ -26,21 +22,17 @@ resource networkInterface 'Microsoft.Network/networkInterfaces@2023-09-01' = {
           subnet: {
             id: jumpbox_subnet_id
           }
-          privateIPAllocationMethod: 'Dynamic'
-          publicIPAddress: {
-            id: publicIP.id
-          }
-        }
+          privateIPAllocationMethod: 'Dynamic'        }
       }
     ]
   }
-  dependsOn: [
-    publicIP
-  ]
+  tags: {
+    default_tag_name: default_tag_value
+  }
 }
 
 resource virtualMachine 'Microsoft.Compute/virtualMachines@2023-09-01' = {
-  name: '${jumpbox_name}-jumpbox-vm'
+  name: jumpbox_name
   location: location
   properties: {
     hardwareProfile: {
@@ -70,6 +62,9 @@ resource virtualMachine 'Microsoft.Compute/virtualMachines@2023-09-01' = {
       ]
     }
   }
+  tags: {
+    default_tag_name: default_tag_value
+  }
   dependsOn: [
     networkInterface
   ]
@@ -77,4 +72,3 @@ resource virtualMachine 'Microsoft.Compute/virtualMachines@2023-09-01' = {
 
 output vmId string = virtualMachine.id
 output vmName string = virtualMachine.name
-output publicIpAddress string = publicIP.properties.ipAddress

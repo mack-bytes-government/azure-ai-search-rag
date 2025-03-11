@@ -14,8 +14,11 @@ param logic_app_in_cidr string = '10.0.3.0/24'
 param logic_app_out_cidr string = '10.0.4.0/24'
 param jumpbox_cidr string = '10.0.5.0/24'
 param bastion_cidr string = '10.0.6.0/24'
+param openai_cidr string = '10.0.7.0/24'
 
+// Subnet Control
 param deploy_jumpbox bool = true
+param deploy_openai bool = true
 
 param default_tag_name string
 param default_tag_value string
@@ -82,6 +85,17 @@ resource jumpbox_subnet 'Microsoft.Network/virtualNetworks/subnets@2023-09-01' =
   parent: virtual_network 
   properties: {
     addressPrefix: jumpbox_cidr
+  }
+  dependsOn: [
+    virtual_network, logic_app_out_subnet
+  ]
+}
+
+resource open_ai_subnet 'Microsoft.Network/virtualNetworks/subnets@2023-09-01' = if (deploy_openai) {
+  name: '${project_prefix}-${env_prefix}-openai'
+  parent: virtual_network 
+  properties: {
+    addressPrefix: openai_cidr
   }
   dependsOn: [
     virtual_network, logic_app_out_subnet

@@ -16,6 +16,10 @@ param project_cidr string = '10.0.1.0/24'
 param storage_cidr string = '10.0.2.0/24'
 param logic_app_in_cidr string = '10.0.3.0/24'
 param logic_app_out_cidr string = '10.0.4.0/24'
+param jumpbox_cidr string = '10.0.5.0/24'
+param bastion_cidr string = '10.0.6.0/24'
+param openai_cidr string = '10.0.7.0/24'
+
 
 // Tag Configuration:
 param default_tag_name string
@@ -28,6 +32,7 @@ param deploy_jumpbox bool = false
 param deploy_search bool = true
 param deploy_logic_app bool = true  
 param deploy_storage bool = true
+param deploy_openai bool = true
 
 
 //Deploy into a existing network
@@ -42,6 +47,10 @@ module existing_network './modules/network.bicep' = {
     storage_cidr: storage_cidr
     logic_app_in_cidr: logic_app_in_cidr
     logic_app_out_cidr: logic_app_out_cidr
+    jumpbox_cidr: jumpbox_cidr
+    bastion_cidr: bastion_cidr
+    openai_cidr: openai_cidr
+    deploy_openai: deploy_openai
     default_tag_name: default_tag_name
     default_tag_value: default_tag_value
     deploy_jumpbox: deploy_jumpbox

@@ -135,6 +135,16 @@ JUMPBOX_SUBNET_ID=""
 az deployment group create --resource-group $RESOURCE_GROUP_NAME --template-file ./main-jumpbox.bicep --parameters project_prefix=$PROJECT_PREFIX env_prefix=$ENV_PREFIX default_tag_name=$DEFAULT_TAG_NAME default_tag_value=$DEFAULT_TAG_VALUE admin_username=$ADMIN_USERNAME admin_password=$ADMIN_PASSWORD jumpbox_subnet_id=$JUMPBOX_SUBNET_ID
 ```
 
+## Deploy with AOAI
+
+For this template, you can create a subnet by enabling the "deploy_aoai" set to true, and then run the following:
+
+```bash
+ADMIN_EMAIL=""
+
+az deployment group create --resource-group $RESOURCE_GROUP_NAME --template-file ./main-aoai.bicep --parameters project_prefix=$PROJECT_PREFIX env_prefix=$ENV_PREFIX default_tag_name=$DEFAULT_TAG_NAME default_tag_value=$DEFAULT_TAG_VALUE admin_email=$ADMIN_EMAIL subnet_id=$JUMPBOX_SUBNET_ID
+```
+
 ## Clean up Deployment
 
 To clean up the resources, you can run the following command:
