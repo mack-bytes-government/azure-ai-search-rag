@@ -75,7 +75,7 @@ az login
 First this deployment requires a resource group and a virtual network to work with.  If those do not exist, run the following to stand them up.
 
 ```bash
-RESOURCE_GROUP_NAME="search-rag-rg-1"
+RESOURCE_GROUP_NAME="search-rag-demo-rg"
 VNET_NAME="search-rag-vnet"
 LOCATION="usgovvirginia"
 SUBNET_NAME="default"
@@ -90,7 +90,7 @@ az network vnet create --name $VNET_NAME --resource-group $RESOURCE_GROUP_NAME -
 If you already have a vnet, then run the following:
 
 ```bash
-RESOURCE_GROUP_NAME="search-rag-rg-1"
+RESOURCE_GROUP_NAME="search-rag-demo-rg"
 PROJECT_PREFIX="rag"
 ENV_PREFIX="dev1"
 EXISTING_NETWORK_NAME="search-rag-vnet"
@@ -100,9 +100,69 @@ DEFAULT_TAG_VALUE="search-rag"
 az deployment group create --resource-group $RESOURCE_GROUP_NAME --template-file ./main.bicep --parameters project_prefix=$PROJECT_PREFIX env_prefix=$ENV_PREFIX existing_network_name=$EXISTING_NETWORK_NAME default_tag_name=$DEFAULT_TAG_NAME default_tag_value=$DEFAULT_TAG_VALUE
 ```
 
-To Do:
-[ ]: Build out logic app implementation
-[ ]: Build out adding index into the Azure Search
-[ ]: Build out NSGs to validate everything
-[ ]: Review IL4/IL5 to make sure rules are applied.  
-[ ]: Build out adding blob for index file for template.
+If you want to control and deploy only specific pieces, there are options for controlling which parts are deployed, default is 'true' for these values:
+
+```bash
+DEPLOY_SEARCH=true
+DEPLOY_LOGIC_APP=true
+DEPLOY_STORAGE=true
+
+az deployment group create --resource-group $RESOURCE_GROUP_NAME --template-file ./main.bicep --parameters project_prefix=$PROJECT_PREFIX env_prefix=$ENV_PREFIX existing_network_name=$EXISTING_NETWORK_NAME default_tag_name=$DEFAULT_TAG_NAME default_tag_value=$DEFAULT_TAG_VALUE deploy_storage=$DEPLOY_STORAGE deploy_logic_app=$DEPLOY_LOGIC_APP deploy_logic_app=$DEPLOY_LOGIC_APP
+```
+
+## Deploy with Jumpbox
+
+If you wish, you can deploy this template with a jumpbox and bastion enabled.  This will allow validation of the private deployment.  
+
+You can run the following to deploy the environment:
+
+```bash
+RESOURCE_GROUP_NAME="search-rag-demo-rg"
+PROJECT_PREFIX="rag"
+ENV_PREFIX="dev1"
+EXISTING_NETWORK_NAME="search-rag-vnet"
+DEFAULT_TAG_NAME="environment"
+DEFAULT_TAG_VALUE="search-rag"
+
+az deployment group create --resource-group $RESOURCE_GROUP_NAME --template-file ./main.bicep --parameters project_prefix=$PROJECT_PREFIX env_prefix=$ENV_PREFIX existing_network_name=$EXISTING_NETWORK_NAME default_tag_name=$DEFAULT_TAG_NAME default_tag_value=$DEFAULT_TAG_VALUE deploy_jumpbox=true
+```
+
+```bash
+ADMIN_USERNAME=""
+ADMIN_PASSWORD=""
+JUMPBOX_SUBNET_ID=""
+
+az deployment group create --resource-group $RESOURCE_GROUP_NAME --template-file ./main-jumpbox.bicep --parameters project_prefix=$PROJECT_PREFIX env_prefix=$ENV_PREFIX default_tag_name=$DEFAULT_TAG_NAME default_tag_value=$DEFAULT_TAG_VALUE admin_username=$ADMIN_USERNAME admin_password=$ADMIN_PASSWORD jumpbox_subnet_id=$JUMPBOX_SUBNET_ID
+```
+
+## Deploy with AOAI
+
+For this template, you can create a subnet by enabling the "deploy_aoai" set to true, and then run the following:
+
+First run this to deploy the environment:
+
+```bash
+RESOURCE_GROUP_NAME="search-rag-demo-rg"
+PROJECT_PREFIX="rag"
+ENV_PREFIX="dev1"
+EXISTING_NETWORK_NAME="search-rag-vnet"
+DEFAULT_TAG_NAME="environment"
+DEFAULT_TAG_VALUE="search-rag"
+
+az deployment group create --resource-group $RESOURCE_GROUP_NAME --template-file ./main.bicep --parameters project_prefix=$PROJECT_PREFIX env_prefix=$ENV_PREFIX existing_network_name=$EXISTING_NETWORK_NAME default_tag_name=$DEFAULT_TAG_NAME default_tag_value=$DEFAULT_TAG_VALUE deploy_openai=true deploy_jumpbox=true
+```
+
+```bash
+ADMIN_EMAIL=""
+AOAI_SUBNET_ID=""
+
+az deployment group create --resource-group $RESOURCE_GROUP_NAME --template-file ./main-aoai.bicep --parameters project_prefix=$PROJECT_PREFIX env_prefix=$ENV_PREFIX default_tag_name=$DEFAULT_TAG_NAME default_tag_value=$DEFAULT_TAG_VALUE admin_email=$ADMIN_EMAIL subnet_id=$AOAI_SUBNET_ID
+```
+
+## Clean up Deployment
+
+To clean up the resources, you can run the following command:
+
+```bash
+az group delete -n $RESOURCE_GROUP_NAME -y
+```

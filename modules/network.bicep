@@ -10,6 +10,15 @@ param existing_network_name string = ''
 // Optional Parameters:
 param project_cidr string = '10.0.1.0/24'
 param storage_cidr string = '10.0.2.0/24'
+param logic_app_in_cidr string = '10.0.3.0/24'
+param logic_app_out_cidr string = '10.0.4.0/24'
+param jumpbox_cidr string = '10.0.5.0/24'
+param bastion_cidr string = '10.0.6.0/24'
+param openai_cidr string = '10.0.7.0/24'
+
+// Subnet Control
+param deploy_jumpbox bool = true
+param deploy_openai bool = true
 
 param default_tag_name string
 param default_tag_value string
@@ -25,6 +34,9 @@ resource default_subnet 'Microsoft.Network/virtualNetworks/subnets@2023-09-01' =
   properties: {
     addressPrefix: project_cidr
   }
+  dependsOn: [
+    virtual_network
+  ]
 }
 
 resource storage_subnet 'Microsoft.Network/virtualNetworks/subnets@2023-09-01' = {
@@ -33,9 +45,116 @@ resource storage_subnet 'Microsoft.Network/virtualNetworks/subnets@2023-09-01' =
   properties: {
     addressPrefix: storage_cidr
   }
+  dependsOn: [
+    virtual_network, default_subnet
+  ]
+}
+
+resource logic_app_in_subnet 'Microsoft.Network/virtualNetworks/subnets@2023-09-01' = {
+  name: '${project_prefix}-${env_prefix}-logic-app-in'
+  parent: virtual_network 
+  properties: {
+    addressPrefix: logic_app_in_cidr
+  }
+  dependsOn: [
+    virtual_network, storage_subnet
+  ]
+}
+
+resource logic_app_out_subnet 'Microsoft.Network/virtualNetworks/subnets@2023-09-01' = {
+  name: '${project_prefix}-${env_prefix}-logic-app-out'
+  parent: virtual_network 
+  properties: {
+    addressPrefix: logic_app_out_cidr
+    delegations: [
+      {
+        name: 'MicrosoftWebServerFarmsDelegation'
+        properties: {
+          serviceName: 'Microsoft.Web/serverFarms'
+        }
+      }
+    ]
+  }
+  dependsOn: [
+    virtual_network, logic_app_in_subnet
+  ]
+}
+
+resource jumpbox_subnet 'Microsoft.Network/virtualNetworks/subnets@2023-09-01' = if (deploy_jumpbox) {
+  name: '${project_prefix}-${env_prefix}-jump-box'
+  parent: virtual_network 
+  properties: {
+    addressPrefix: jumpbox_cidr
+  }
+  dependsOn: [
+    virtual_network, logic_app_out_subnet
+  ]
+}
+
+resource open_ai_subnet 'Microsoft.Network/virtualNetworks/subnets@2023-09-01' = if (deploy_openai) {
+  name: '${project_prefix}-${env_prefix}-openai'
+  parent: virtual_network 
+  properties: {
+    addressPrefix: openai_cidr
+  }
+  dependsOn: [
+    virtual_network, logic_app_out_subnet
+  ]
+}
+
+// Bastion Subnet
+resource bastion_subnet 'Microsoft.Network/virtualNetworks/subnets@2023-09-01' = if (deploy_jumpbox) {
+  name: 'AzureBastionSubnet'
+  parent: virtual_network 
+  properties: {
+    addressPrefix: bastion_cidr
+  }
+  dependsOn: [
+    virtual_network, jumpbox_subnet
+  ]
+}
+
+// Public IP Address for Bastion Host
+resource bastion_pip 'Microsoft.Network/publicIPAddresses@2023-09-01' = if (deploy_jumpbox) {
+  name: '${project_prefix}-${env_prefix}-bastion-pip'
+  location: location
+  sku: {
+    name: 'Standard'
+  }
+  properties: {
+    publicIPAllocationMethod: 'Static'
+  }
+}
+
+// Bastion Host
+resource bastion_host 'Microsoft.Network/bastionHosts@2023-09-01' = if (deploy_jumpbox) {
+  name: '${project_prefix}-${env_prefix}-bastion-host'
+  location: location
+  properties: {
+    ipConfigurations: [
+      {
+        name: 'bastionIPConfig'
+        properties: {
+          subnet: {
+            id: bastion_subnet.id
+          }
+          publicIPAddress: {
+            id: bastion_pip.id
+          }
+        }
+      }
+    ]
+  }
+  dependsOn: [
+    bastion_subnet
+    bastion_pip
+  ]
 }
 
 output id string = virtual_network.id
 output name string = virtual_network.name
 output primary_subnet_id string = virtual_network.properties.subnets[0].id
 output storage_subnet_id string = storage_subnet.id
+output logic_app_in_subnet_id string = logic_app_in_subnet.id
+output logic_app_out_subnet_id string = logic_app_out_subnet.id
+output jumpbox_subnet_id string = jumpbox_subnet.id

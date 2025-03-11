@@ -55,6 +55,9 @@ resource private_endpoint 'Microsoft.Network/privateEndpoints@2021-05-01' = {
       }
     ]
   }
+  dependsOn: [
+    search_service
+  ]
 }
 
 resource private_dns_zone 'Microsoft.Network/privateDnsZones@2020-06-01' = {
@@ -78,6 +81,9 @@ resource privateDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLin
       id: vnet_id
     }
   }
+  dependsOn: [
+    private_dns_zone
+  ]
 }
 
 resource privateDnsZoneGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2020-07-01' = {
@@ -93,4 +99,8 @@ resource privateDnsZoneGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneG
       }
     ]
   }
+  dependsOn: [
+    private_endpoint
+    private_dns_zone
+  ]
 }
