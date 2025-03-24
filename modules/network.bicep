@@ -29,7 +29,7 @@ resource virtual_network 'Microsoft.Network/virtualNetworks@2023-09-01' existing
 
 // Subnet for pod pods
 resource default_subnet 'Microsoft.Network/virtualNetworks/subnets@2023-09-01' = {
-  name: '${project_prefix}-${env_prefix}-project'
+  name: '${virtual_network.name}/${project_prefix}-${env_prefix}-project'
   parent: virtual_network
   properties: {
     addressPrefix: project_cidr
@@ -40,7 +40,7 @@ resource default_subnet 'Microsoft.Network/virtualNetworks/subnets@2023-09-01' =
 }
 
 resource storage_subnet 'Microsoft.Network/virtualNetworks/subnets@2023-09-01' = {
-  name: '${project_prefix}-${env_prefix}-storage'
+  name: '${virtual_network.name}/${project_prefix}-${env_prefix}-storage'
   parent: virtual_network 
   properties: {
     addressPrefix: storage_cidr
@@ -51,7 +51,7 @@ resource storage_subnet 'Microsoft.Network/virtualNetworks/subnets@2023-09-01' =
 }
 
 resource logic_app_in_subnet 'Microsoft.Network/virtualNetworks/subnets@2023-09-01' = {
-  name: '${project_prefix}-${env_prefix}-logic-app-in'
+  name: '${virtual_network.name}/${project_prefix}-${env_prefix}-logic-app-in'
   parent: virtual_network 
   properties: {
     addressPrefix: logic_app_in_cidr
@@ -62,7 +62,7 @@ resource logic_app_in_subnet 'Microsoft.Network/virtualNetworks/subnets@2023-09-
 }
 
 resource logic_app_out_subnet 'Microsoft.Network/virtualNetworks/subnets@2023-09-01' = {
-  name: '${project_prefix}-${env_prefix}-logic-app-out'
+  name: '${virtual_network.name}/${project_prefix}-${env_prefix}-logic-app-out'
   parent: virtual_network 
   properties: {
     addressPrefix: logic_app_out_cidr
@@ -81,7 +81,7 @@ resource logic_app_out_subnet 'Microsoft.Network/virtualNetworks/subnets@2023-09
 }
 
 resource jumpbox_subnet 'Microsoft.Network/virtualNetworks/subnets@2023-09-01' = if (deploy_jumpbox) {
-  name: '${project_prefix}-${env_prefix}-jump-box'
+  name: '${virtual_network.name}/${project_prefix}-${env_prefix}-jump-box'
   parent: virtual_network 
   properties: {
     addressPrefix: jumpbox_cidr
@@ -92,7 +92,7 @@ resource jumpbox_subnet 'Microsoft.Network/virtualNetworks/subnets@2023-09-01' =
 }
 
 resource open_ai_subnet 'Microsoft.Network/virtualNetworks/subnets@2023-09-01' = if (deploy_openai) {
-  name: '${project_prefix}-${env_prefix}-openai'
+  name: '${virtual_network.name}/${project_prefix}-${env_prefix}-openai'
   parent: virtual_network 
   properties: {
     addressPrefix: openai_cidr
@@ -104,7 +104,7 @@ resource open_ai_subnet 'Microsoft.Network/virtualNetworks/subnets@2023-09-01' =
 
 // Bastion Subnet
 resource bastion_subnet 'Microsoft.Network/virtualNetworks/subnets@2023-09-01' = if (deploy_jumpbox) {
-  name: 'AzureBastionSubnet'
+  name: '${virtual_network.name}/AzureBastionSubnet'
   parent: virtual_network 
   properties: {
     addressPrefix: bastion_cidr
